@@ -1,10 +1,11 @@
-import org.gradle.api.*
-import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.*
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-open class DockerWaitForContainerLogTask : DefaultTask() {
+
+open class DockerWaitForContainerLog : DefaultTask() {
 
     init {
         group = "Docker"
@@ -13,8 +14,10 @@ open class DockerWaitForContainerLogTask : DefaultTask() {
 
     @TaskAction
     fun run() {
+
         val timeout = System.currentTimeMillis() + this.timeout
         var started = false
+
         while (!started && System.currentTimeMillis() < timeout) {
             val dockerLogOutput = "docker logs $containerId".runShell() ?: continue
 
@@ -32,7 +35,7 @@ open class DockerWaitForContainerLogTask : DefaultTask() {
     }
 
     @get:Input
-    val containerId by lazy { targetContainerId() }
+    val containerId by lazy { containerIdRef() }
 
     @get:Input
     var expectedLog = "kafka entered RUNNING .*"
@@ -40,10 +43,10 @@ open class DockerWaitForContainerLogTask : DefaultTask() {
     @get:Input
     var timeout = 30_000
 
-    var targetContainerId: () -> String? = { null }
+    var containerIdRef: () -> String? = { null }
 
-    fun targetContainerId(lookup: () -> String?) {
-        targetContainerId = lookup
+    fun targetContainerId(containerId: () -> String?) {
+        containerIdRef = containerId
     }
 
     private fun String.runShell(): String? {

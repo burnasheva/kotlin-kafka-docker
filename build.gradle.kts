@@ -18,13 +18,11 @@ buildscript {
     }
 }
 
-apply {
-    plugin("com.bmuschko.docker-remote-api")
-}
 
 plugins {
     application
     kotlin("jvm") version "1.2.20"
+    id("com.bmuschko.docker-remote-api") version "3.2.2"
 }
 
 application {
@@ -38,19 +36,22 @@ repositories {
 dependencies {
     val kafkaVersion = "0.11.0.2"
 
-    compile(kotlin("stdlib"))
+    compile(kotlin("stdlib-jdk8"))
+
     compile("org.apache.kafka:kafka-streams:$kafkaVersion")
     compile("org.apache.kafka:kafka_2.12:0.11.0.2")
     compile("io.github.microutils:kotlin-logging:1.5.3")
-    compile("ch.qos.logback:logback-classic:1.2.3")
-    compile("org.slf4j:log4j-over-slf4j:1.7.25")
+
+    runtime("ch.qos.logback:logback-classic:1.2.3")
+    runtime("org.slf4j:log4j-over-slf4j:1.7.25")
 
     testCompile("junit:junit:4.12")
     testCompile("org.assertj:assertj-core:3.9.0")
     testCompile("com.101tec:zkclient:0.10")
     testCompile("org.apache.kafka:kafka-clients:$kafkaVersion")
     testCompile("com.natpryce:hamkrest:1.4.2.2")
-    testCompile("org.jetbrains.kotlin:kotlin-reflect:1.2.20")
+
+    testRuntime("org.jetbrains.kotlin:kotlin-reflect:1.2.20")
 }
 
 configurations {
@@ -71,6 +72,7 @@ tasks {
     }
 
     "dockerRemoveContainer"(Exec::class) {
+        group = "docker"
         executable = "docker"
         args = listOf("rm", "-f", testContainerName)
         isIgnoreExitValue = true
@@ -94,13 +96,18 @@ tasks {
         targetContainerId { dockerCreateContainer.containerId }
     }
 
-    "dockerWaitForContainerLog"(DockerWaitForContainerLogTask::class) {
+    "dockerWaitForContainerLog"(DockerWaitForContainerLog::class) {
         targetContainerId { dockerCreateContainer.containerId }
     }
 
-    "test" {
-        dependsOn("dockerStartContainer", "dockerWaitForContainerLog")
+    "test"(Test::class) {
+        include("**/*Test.class")
+    }
+
+    "it"(Test::class) {
+        dependsOn("test", "dockerStartContainer", "dockerWaitForContainerLog")
         //    finalizedBy("dockerStopContainer")
+
+        include("**/*IT.class")
     }
 }
-
