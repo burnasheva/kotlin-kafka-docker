@@ -4,7 +4,6 @@ import org.gradle.api.tasks.TaskAction
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-
 open class DockerWaitForContainerLog : DefaultTask() {
 
     init {
