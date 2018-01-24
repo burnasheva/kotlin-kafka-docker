@@ -10,6 +10,7 @@ import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.KStreamBuilder
+import org.apache.kafka.streams.kstream.Predicate
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,12 +30,13 @@ class HelloKafkaIT {
         try {
             kafkaBrokerRule.createTopic(inputTopic)
             kafkaBrokerRule.createTopic(outputTopic)
-        } catch (e: TopicExistsException) {}
+        } catch (e: TopicExistsException) {
+        }
     }
 
     @Test
     fun shouldUppercaseTheInput() {
-        val inputValues = listOf("hello", "world")
+        val inputValues = listOf("hello", "", "world")
         val expectedValues = listOf("HELLO", "WORLD")
 
         val builder = KStreamBuilder()
@@ -45,10 +47,12 @@ class HelloKafkaIT {
             put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.ByteArray().javaClass.name)
             put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().javaClass.name)
             put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+            //     put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE)
         }
         val input: KStream<ByteArray, String> = builder.stream(inputTopic)
-        val uppercased = input.mapValues({ it.toUpperCase() })
-        uppercased.to(outputTopic)
+        val uppercased = input.mapValues { it.toUpperCase() }
+        val filtered = uppercased.filter { _, value -> !value.isBlank() }
+        filtered.to(outputTopic)
 
         val streams = KafkaStreams(builder, streamsConfiguration)
         streams.start()
@@ -78,7 +82,7 @@ class HelloKafkaIT {
 
         val actualValues: List<String> = IntegrationTestUtils.waitUntilMinValuesRecordsReceived(consumerConfig,
                 outputTopic, expectedValues.size)
-        streams.close();
+        streams.close()
         assert.that(actualValues, equalTo(expectedValues))
     }
 }
