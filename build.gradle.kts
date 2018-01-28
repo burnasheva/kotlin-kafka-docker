@@ -14,14 +14,14 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.bmuschko:gradle-docker-plugin:3.2.2")
+        classpath("com.bmuschko:gradle-docker-plugin:3.2.3")
     }
 }
 
 plugins {
     application
     kotlin("jvm") version "1.2.21"
-    id("com.bmuschko.docker-remote-api") version "3.2.2"
+    id("com.bmuschko.docker-remote-api") version "3.2.3"
 }
 
 repositories {
@@ -50,7 +50,7 @@ dependencies {
     testCompile("org.apache.kafka:kafka-clients:$kafkaVersion")
     testCompile("com.natpryce:hamkrest:1.4.2.2")
 
-    testRuntime("org.jetbrains.kotlin:kotlin-reflect:1.2.20")
+    testRuntime(kotlin("reflect"))
 }
 
 configurations {
@@ -66,37 +66,37 @@ tasks {
 
     createTask("dockerVersion", DockerVersion::class) {}
 
-    createTask("dockerPullImage", DockerPullImage::class) {
+    createTask("dockerPull", DockerPullImage::class) {
         repository = "spotify/kafka"
     }
 
-    createTask("dockerRemoveContainer", Exec::class) {
+    createTask("dockerRemove", Exec::class) {
         group = "docker"
         executable = "docker"
         args = listOf("rm", "-f", testContainerName)
         isIgnoreExitValue = true
     }
 
-    val dockerCreateContainer = createTask("dockerCreateContainer", DockerCreateContainer::class) {
-        dependsOn("dockerPullImage", "dockerRemoveContainer")
+    val dockerCreate = createTask("dockerCreate", DockerCreateContainer::class) {
+        dependsOn("dockerPull", "dockerRemove")
         targetImageId { "spotify/kafka" }
         portBindings = listOf("2181:2181", "9092:9092")
         setEnv("ADVERTISED_HOST=127.0.0.1", "ADVERTISED_PORT=9092")
         containerName = testContainerName
     }
 
-    createTask("dockerStartContainer", DockerStartContainer::class) {
-        dependsOn("dockerCreateContainer")
+    createTask("dockerStart", DockerStartContainer::class) {
+        dependsOn("dockerCreate")
 
-        targetContainerId { dockerCreateContainer.containerId }
+        targetContainerId { dockerCreate.containerId }
     }
 
-    createTask("dockerStopContainer", DockerStopContainer::class) {
-        targetContainerId { dockerCreateContainer.containerId }
+    createTask("dockerStop", DockerStopContainer::class) {
+        targetContainerId { dockerCreate.containerId }
     }
 
-    createTask("dockerWaitForContainerLog", DockerWaitForContainerLog::class) {
-        targetContainerId { dockerCreateContainer.containerId }
+    createTask("dockerWaitForLog", DockerWaitForContainerLog::class) {
+        targetContainerId { dockerCreate.containerId }
     }
 
     "test"(Test::class) {
@@ -104,7 +104,7 @@ tasks {
     }
 
     createTask("it", Test::class) {
-        dependsOn("test", "dockerStartContainer", "dockerWaitForContainerLog")
+        dependsOn("test", "dockerStart", "dockerWaitForLog")
         //    finalizedBy("dockerStopContainer")
 
         include("**/*IT.class")
