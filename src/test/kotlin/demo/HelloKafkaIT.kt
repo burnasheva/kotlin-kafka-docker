@@ -47,7 +47,7 @@ class HelloKafkaIT {
             put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.ByteArray().javaClass.name)
             put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().javaClass.name)
             put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-            //     put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE)
+            put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE)
         }
         val input: KStream<ByteArray, String> = builder.stream(inputTopic)
         val uppercased = input.mapValues { it.toUpperCase() }

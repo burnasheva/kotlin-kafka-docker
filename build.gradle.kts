@@ -5,6 +5,7 @@ import com.bmuschko.gradle.docker.tasks.container.DockerLogsContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
 import com.bmuschko.gradle.docker.tasks.container.extras.DockerWaitHealthyContainer
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
 import java.io.IOException
 
@@ -66,8 +67,9 @@ tasks {
 
     createTask("dockerVersion", DockerVersion::class) {}
 
-    createTask("dockerPull", DockerPullImage::class) {
-        repository = "spotify/kafka"
+    createTask("dockerBuild", DockerBuildImage::class) {
+        inputDir = projectDir.resolve("src/main/docker")
+        tag = "abendt/kafka"
     }
 
     createTask("dockerRemove", Exec::class) {
@@ -78,8 +80,8 @@ tasks {
     }
 
     val dockerCreate = createTask("dockerCreate", DockerCreateContainer::class) {
-        dependsOn("dockerPull", "dockerRemove")
-        targetImageId { "spotify/kafka" }
+        dependsOn("dockerBuild", "dockerRemove")
+        targetImageId { "abendt/kafka" }
         portBindings = listOf("2181:2181", "9092:9092")
         setEnv("ADVERTISED_HOST=127.0.0.1", "ADVERTISED_PORT=9092")
         containerName = testContainerName
@@ -105,7 +107,7 @@ tasks {
 
     createTask("it", Test::class) {
         dependsOn("test", "dockerStart", "dockerWaitForLog")
-        //    finalizedBy("dockerStopContainer")
+        finalizedBy("dockerStop")
 
         include("**/*IT.class")
     }
