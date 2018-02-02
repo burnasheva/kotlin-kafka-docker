@@ -68,8 +68,8 @@ tasks {
     createTask("dockerVersion", DockerVersion::class) {}
 
     createTask("dockerBuild", DockerBuildImage::class) {
-        inputDir = projectDir.resolve("src/main/docker")
-        tag = "abendt/kafka"
+        inputDir = projectDir.resolve("src/main/alpine")
+        tag = "abendt/kafka-alpine"
     }
 
     createTask("dockerRemove", Exec::class) {
@@ -81,7 +81,7 @@ tasks {
 
     val dockerCreate = createTask("dockerCreate", DockerCreateContainer::class) {
         dependsOn("dockerBuild", "dockerRemove")
-        targetImageId { "abendt/kafka" }
+        targetImageId { "abendt/kafka-alpine" }
         portBindings = listOf("2181:2181", "9092:9092")
         setEnv("ADVERTISED_HOST=127.0.0.1", "ADVERTISED_PORT=9092")
         containerName = testContainerName
