@@ -7,6 +7,7 @@ import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
 import com.bmuschko.gradle.docker.tasks.container.extras.DockerWaitHealthyContainer
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import java.io.IOException
 
 buildscript {
@@ -110,5 +111,9 @@ tasks {
         finalizedBy("dockerStop")
 
         include("**/*IT.class")
+
+        testLogging {
+            exceptionFormat = TestExceptionFormat.FULL
+        }
     }
 }
