@@ -98,9 +98,10 @@ tasks {
         targetContainerId { dockerCreate.containerId }
     }
 
-    createTask("dockerWaitForLog", DockerWaitForContainerLog::class) {
+    createTask("dockerWaitHealthy", DockerWaitHealthyContainer::class) {
         targetContainerId { dockerCreate.containerId }
     }
+
 
     "test"(Test::class) {
         include("**/*Test.class")
@@ -112,7 +113,7 @@ tasks {
     }
 
     createTask("it", Test::class) {
-        dependsOn("test", "dockerStart", "dockerWaitForLog")
+        dependsOn("test", "dockerStart", "dockerWaitHealthy")
         finalizedBy("dockerStop")
 
         include("**/*IT.class")

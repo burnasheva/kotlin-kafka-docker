@@ -15,11 +15,12 @@ RUN apk -U upgrade && \
     ln -s /opt/zookeeper-3.4.10 /opt/zookeeper && \
     wget -q http://apache.mirrors.spacedump.net/kafka/"$KAFKA_VERSION"/kafka_"$SCALA_VERSION"-"$KAFKA_VERSION".tgz -O /tmp/kafka_"$SCALA_VERSION"-"$KAFKA_VERSION".tgz && \
     tar xfz /tmp/kafka_"$SCALA_VERSION"-"$KAFKA_VERSION".tgz -C /opt && \
+    ln -s /opt/kafka_"$SCALA_VERSION"-"$KAFKA_VERSION" /opt/kafka && \
     rm /tmp/kafka_"$SCALA_VERSION"-"$KAFKA_VERSION".tgz && \
     apk del wget && \
     rm -rf /var/cache/apk/*
 
-ADD scripts/start-kafka.sh /usr/bin/start-kafka.sh
+ADD scripts/start-kafka.sh scripts/kafka-health.sh /usr/bin/
 
 ADD conf/zoo.cfg /opt/zookeeper/conf/zoo.cfg
 
@@ -28,5 +29,7 @@ ADD supervisor/kafka.ini supervisor/zookeeper.ini /etc/supervisor.d/
 
 # 2181 is zookeeper, 9092 is kafka
 EXPOSE 2181 9092
+
+HEALTHCHECK CMD /usr/bin/kafka-health.sh
 
 CMD ["supervisord", "-n", "-c", "/etc/supervisord.conf"]
