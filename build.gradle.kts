@@ -104,6 +104,11 @@ tasks {
 
     "test"(Test::class) {
         include("**/*Test.class")
+
+        testLogging {
+            exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
+        }
     }
 
     createTask("it", Test::class) {
@@ -114,6 +119,7 @@ tasks {
 
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
         }
     }
 }
