@@ -35,12 +35,12 @@ application {
 }
 
 dependencies {
-    val kafkaVersion = "0.11.0.2"
+    val kafkaVersion = "1.0.0"
 
     compile(kotlin("stdlib-jdk8"))
 
     compile("org.apache.kafka:kafka-streams:$kafkaVersion")
-    compile("org.apache.kafka:kafka_2.12:0.11.0.2")
+    compile("org.apache.kafka:kafka_2.12:$kafkaVersion")
     compile("io.github.microutils:kotlin-logging:1.5.3")
 
     runtime("ch.qos.logback:logback-classic:1.2.3")
@@ -102,14 +102,8 @@ tasks {
         targetContainerId { dockerCreate.containerId }
     }
 
-
     "test"(Test::class) {
         include("**/*Test.class")
-
-        testLogging {
-            exceptionFormat = TestExceptionFormat.FULL
-            showStandardStreams = true
-        }
     }
 
     createTask("it", Test::class) {
@@ -117,10 +111,12 @@ tasks {
         finalizedBy("dockerStop")
 
         include("**/*IT.class")
+    }
+}
 
-        testLogging {
-            exceptionFormat = TestExceptionFormat.FULL
-            showStandardStreams = true
-        }
+tasks.withType(Test::class.java) {
+    testLogging {
+        exceptionFormat = TestExceptionFormat.FULL
+        showStandardStreams = true
     }
 }
