@@ -22,7 +22,7 @@ buildscript {
 
 plugins {
     application
-    kotlin("jvm") version "1.2.21"
+    kotlin("jvm") version "1.2.30"
     id("com.bmuschko.docker-remote-api") version "3.2.3"
 }
 
@@ -47,7 +47,7 @@ dependencies {
     runtime("org.slf4j:log4j-over-slf4j:1.7.25")
 
     testCompile("junit:junit:4.12")
-    testCompile("org.assertj:assertj-core:3.9.0")
+    testCompile("org.assertj:assertj-core:3.9.1")
     testCompile("com.101tec:zkclient:0.10")
     testCompile("org.apache.kafka:kafka-clients:$kafkaVersion")
     testCompile("com.natpryce:hamkrest:1.4.2.2")
