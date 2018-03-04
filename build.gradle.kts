@@ -14,10 +14,6 @@ buildscript {
     repositories {
         jcenter()
     }
-
-    dependencies {
-        classpath("com.bmuschko:gradle-docker-plugin:3.2.3")
-    }
 }
 
 plugins {
